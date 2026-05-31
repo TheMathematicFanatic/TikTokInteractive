@@ -9,6 +9,9 @@ Set TIKTOK_USERNAME below or pass it via the environment.
 """
 
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from manimlib import *
 from scene import TikTokGameScene
