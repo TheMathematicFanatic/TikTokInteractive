@@ -2,8 +2,8 @@
 Entry point.
 
 Usage:
-    manimgl main.py TikTokGame -w   # opens a window (for screen capture)
-    manimgl main.py TikTokGame      # same, interactive
+    manimgl main.py TikTokGame      # opens an interactive window (for screen capture)
+    manimgl main.py TikTokGame -w   # render to a movie file instead
 
 Set TIKTOK_USERNAME below or pass it via the environment.
 """
