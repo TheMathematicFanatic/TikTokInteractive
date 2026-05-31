@@ -76,9 +76,18 @@ solve_tl.play_next(scene)
 solve_tl.play_all(scene)
 ```
 
+## Setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Running
 
 ```bash
+source .venv/bin/activate
 TIKTOK_USERNAME=@yourusername manimgl main.py TikTokGame
 ```
 
