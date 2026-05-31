@@ -23,6 +23,7 @@ Test keys (no TikTok connection needed)
 
 import queue
 import time as real_time
+import traceback
 
 from manimlib import *
 
@@ -32,6 +33,7 @@ from gifts import GIFT_TIERS, GiftTier
 from hud import HUD
 from listener import start_listener
 from modes.guessing import GuessingMode
+from repl import start_repl
 
 TEST_USER = "TestViewer"
 
@@ -49,7 +51,11 @@ class TikTokGameScene(Scene):
 
     def construct(self):
         self.event_queue   = queue.Queue()
+        self.command_queue = queue.Queue()
         self.game_state    = GameState()
+
+        # round_end_ref is a one-element list so the HUD timer closure
+        # always reads the live deadline without needing a lambda capture trick.
         self.round_end_ref = [real_time.time() + 9999]
 
         self.hud = HUD(self.game_state, self.round_end_ref)
@@ -59,6 +65,9 @@ class TikTokGameScene(Scene):
 
         start_listener(self.tiktok_username, self.event_queue)
         self._register_test_keys()
+
+        # Background REPL: lines typed in the terminal land on command_queue
+        start_repl(self.command_queue)
 
         self.mode.start_round()
         self._game_loop()
@@ -70,7 +79,9 @@ class TikTokGameScene(Scene):
             self._sync_round_end()
 
             self.wait_until(
-                lambda: not self.event_queue.empty() or self.mode.is_round_over(),
+                lambda: not self.event_queue.empty()
+                        or not self.command_queue.empty()
+                        or self.mode.is_round_over(),
                 max_time=max(0.5, self.round_end_ref[0] - real_time.time() + 0.1),
             )
 
@@ -86,6 +97,25 @@ class TikTokGameScene(Scene):
                 self.mode.handle_event(event)
                 self._sync_round_end()
                 self.hud.refresh_leaderboard()
+
+            # Drain typed commands from the terminal REPL.
+            while not self.command_queue.empty():
+                if self.is_window_closing():
+                    return
+                self._run_command(self.command_queue.get_nowait())
+                self._sync_round_end()
+
+    def _run_command(self, line):
+        """Exec a line typed in the REPL, with the manimlib namespace + self."""
+        from manimlib import __dict__ as manim_ns
+        env = {**manim_ns, "self": self}
+        try:
+            try:
+                print(repr(eval(line, env)))
+            except SyntaxError:
+                exec(line, env)
+        except Exception:
+            traceback.print_exc()
 
     # ── Test key bindings ─────────────────────────────────────────────
 
