@@ -15,4 +15,4 @@ from scene import TikTokGameScene
 
 
 class TikTokGame(TikTokGameScene):
-    tiktok_username = os.environ.get("TIKTOK_USERNAME", "@your_username")
+    tiktok_username = os.environ.get("TIKTOK_USERNAME", "@TheMathematicFanatic")
